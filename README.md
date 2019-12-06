@@ -1,6 +1,5 @@
 # Postgres Query Builder for Rust
 - for usage with postgres crate
-- for other database crate just create another library for that...
 
 # For How it works
 ~~~rs
@@ -50,3 +49,6 @@ fn test_postgres_db() -> Result<(), PostgresError> {
     Ok(())
 }
 ~~~
+
+## Limitation
+Current queryfmt macro does not intelligently notify error like how format! macro do

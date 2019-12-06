@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "postgres_query_builder",
-    "postgres_query_builder_derive",
+    "postgres-query-builder",
+    "postgres-query-builder-derive",
 ]
 
 [profile.release]

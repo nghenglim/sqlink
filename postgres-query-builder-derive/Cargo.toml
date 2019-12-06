@@ -1,10 +1,12 @@
 [package]
-name = "postgres_query_builder_derive"
+name = "postgres-query-builder-derive"
 version = "0.1.0"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
+description = "postgres builder derive to work with postgres"
+license = "MIT/Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-postgres_query_builder = { path = "../postgres_query_builder" }
+postgres-query-builder = { path = "../postgres-query-builder" }

@@ -1,8 +1,10 @@
 [package]
-name = "postgres_query_builder"
+name = "postgres-query-builder"
 version = "0.1.0"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
+description = "postgres builder to work with postgres"
+license = "MIT/Apache-2.0"
 
 [features]
 default = []

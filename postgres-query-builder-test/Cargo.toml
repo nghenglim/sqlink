@@ -1,5 +1,5 @@
 [package]
-name = "postgres_query_builder_test"
+name = "postgres-query-builder-test"
 version = "0.1.0"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
@@ -8,6 +8,6 @@ edition = "2018"
 [workspace]
 
 [dependencies]
-postgres_query_builder = { path = "../postgres_query_builder" }
-postgres_query_builder_derive = { path = "../postgres_query_builder_derive" }
+postgres-query-builder = { path = "../postgres-query-builder" }
+postgres-query-builder-derive = { path = "../postgres-query-builder-derive" }
 postgres = "0.15"
