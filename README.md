@@ -3,6 +3,24 @@
 
 # For How it works
 ~~~rs
+extern crate postgres;
+use postgres::{Connection, TlsMode, Error as PostgresError};
+use sqlink::postgres::{SqlInsert, SqlSelect};
+use sqlink_derive::{postgres_fmt};
+#[derive(Debug, PartialEq)]
+struct Person {
+    id: i32,
+    name: String,
+    data: Option<Vec<u8>>
+}
+
+struct PersonForm {
+    id: i32,
+    name: String,
+    data: Option<Vec<u8>>
+}
+
+#[test]
 fn test_postgres_db() -> Result<(), PostgresError> {
     let conn = Connection::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", TlsMode::None)
     .unwrap();
@@ -13,25 +31,31 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         data            Bytea
       )", &[]).unwrap();
 
-    let opt: Option<Vec<u8>> = None;
-    let mut sqlinsert = sqlink::SqlInsert::new();
+    let person_form = PersonForm {
+        id: 3,
+        name: "Hello World".to_owned(),
+        data: None
+    };
+    let mut sqlinsert = SqlInsert::new();
     let qbuild = sqlinsert
         .table("person")
-        .into(("id", 3))
-        .into(("name", "Hello World"))
-        .into(("data", opt))
+        .into(("id", person_form.id))
+        .into(("name", person_form.name))
+        .into(("data", person_form.data))
         .build().unwrap();
-    // println!("{:?}{:?}", qbuild.query, qbuild.parameters);
     conn.execute(
         &qbuild.query,
         &qbuild.parameters,
     )?;
-    let mut sqlselect = sqlink::SqlSelect::new();
+    let mut sqlselect = SqlSelect::new();
     let qbuild2 = sqlselect
         .select("id")
         .select(("name", "person_name"))
         .select("data")
         .table("person")
+        .and_where(
+            postgres_fmt!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
+        )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
     for row in &conn.query(&qbuild2.query, &qbuild2.parameters).unwrap() {
@@ -48,6 +72,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
     }]);
     Ok(())
 }
+
 ~~~
 
 ## Limitation

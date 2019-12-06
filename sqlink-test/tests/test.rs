@@ -38,7 +38,6 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         .into(("name", person_form.name))
         .into(("data", person_form.data))
         .build().unwrap();
-    // println!("{:?}{:?}", qbuild.query, qbuild.parameters);
     conn.execute(
         &qbuild.query,
         &qbuild.parameters,
