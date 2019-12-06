@@ -1,10 +1,33 @@
+use crate::error::Error;
+
+#[derive(Clone, Debug)]
+pub struct QueryOrders(Vec<QueryOrder>);
+
+impl Default for QueryOrders {
+    fn default() -> Self {
+        QueryOrders(Vec::new())
+    }
+}
+
+impl QueryOrders {
+    pub fn build(&self) -> Result<String, Error> {
+        Ok(self.0.clone().into_iter().map(|s| s.build()).collect::<Vec<String>>().join(", "))
+    }
+    pub fn push(&mut self, field: QueryOrder) {
+        self.0.push(field);
+    }
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct QueryOrder {
     name: String, // TBD on DESC ASC NULL FIRST CASE WHEN
 }
 
 impl QueryOrder {
-    pub fn build(&self) -> String {
+    fn build(&self) -> String {
         self.name.clone()
     }
 }

@@ -1,9 +1,15 @@
-# Postgres Query Builder for Rust
-- for usage with postgres crate
-- for other database crate just create another library for that...
+extern crate postgres;
+use postgres::{Connection, TlsMode, Error as PostgresError};
+use postgres_query_builder::{SqlInsert, SqlSelect};
+use postgres_query_builder_derive::{queryfmt};
+#[derive(Debug, PartialEq)]
+struct Person {
+    id: i32,
+    name: String,
+    data: Option<Vec<u8>>
+}
 
-# For How it works
-~~~rs
+#[test]
 fn test_postgres_db() -> Result<(), PostgresError> {
     let conn = Connection::connect("postgresql://pguser:password@localhost:54321/postgres_query_builder_postgres", TlsMode::None)
     .unwrap();
@@ -15,7 +21,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
       )", &[]).unwrap();
 
     let opt: Option<Vec<u8>> = None;
-    let mut sqlinsert = postgres_query_builder::SqlInsert::new();
+    let mut sqlinsert = SqlInsert::new();
     let qbuild = sqlinsert
         .table("person")
         .into(("id", 3))
@@ -27,12 +33,15 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         &qbuild.query,
         &qbuild.parameters,
     )?;
-    let mut sqlselect = postgres_query_builder::SqlSelect::new();
+    let mut sqlselect = SqlSelect::new();
     let qbuild2 = sqlselect
         .select("id")
         .select(("name", "person_name"))
         .select("data")
         .table("person")
+        .and_where(
+            queryfmt!("person.id = {}", 3)
+        )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
     for row in &conn.query(&qbuild2.query, &qbuild2.parameters).unwrap() {
@@ -49,4 +58,3 @@ fn test_postgres_db() -> Result<(), PostgresError> {
     }]);
     Ok(())
 }
-~~~

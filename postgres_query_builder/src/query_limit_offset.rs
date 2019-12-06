@@ -1,3 +1,5 @@
+use crate::error::Error;
+
 #[derive(Clone, Debug)]
 pub struct QueryLimitOffset {
     limit: u32,
@@ -5,11 +7,11 @@ pub struct QueryLimitOffset {
 }
 
 impl QueryLimitOffset {
-    pub fn build(&self) -> String {
+    pub fn build(&self) -> Result<String, Error> {
         if self.offset == 0 {
-            format!("LIMIT {}", self.limit)
+            Ok(format!("LIMIT {}", self.limit))
         } else {
-            format!("LIMIT {} OFFSET {}", self.limit, self.offset)
+            Ok(format!("LIMIT {} OFFSET {}", self.limit, self.offset))
         }
     }
 }
@@ -42,18 +44,18 @@ mod tests {
             offset: 0,
         };
 
-        assert_eq!(limit_offset.build(), "LIMIT 10");
+        assert_eq!(limit_offset.build().unwrap(), "LIMIT 10");
     }
 
     #[test]
     fn test_limit_offset_2() {
         let limit_offset: QueryLimitOffset = 1.into();
-        assert_eq!(limit_offset.build(), "LIMIT 1");
+        assert_eq!(limit_offset.build().unwrap(), "LIMIT 1");
     }
 
     #[test]
     fn test_limit_offset_3() {
         let limit_offset: QueryLimitOffset = (10, 10).into();
-        assert_eq!(limit_offset.build(), "LIMIT 10 OFFSET 10");
+        assert_eq!(limit_offset.build().unwrap(), "LIMIT 10 OFFSET 10");
     }
 }

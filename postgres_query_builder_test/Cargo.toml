@@ -1,0 +1,13 @@
+[package]
+name = "postgres_query_builder_test"
+version = "0.1.0"
+authors = ["Liam <nghenglim@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+
+[dependencies]
+postgres_query_builder = { path = "../postgres_query_builder" }
+postgres_query_builder_derive = { path = "../postgres_query_builder_derive" }
+postgres = "0.15"

@@ -1,0 +1,11 @@
+[package]
+name = "postgres_query_builder"
+version = "0.1.0"
+authors = ["Liam <nghenglim@gmail.com>"]
+edition = "2018"
+
+[features]
+default = []
+
+[dependencies]
+postgres = { version = "0.15" }

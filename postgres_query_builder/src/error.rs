@@ -1,4 +1,4 @@
 #[derive(Debug)]
 pub enum Error {
-    Syntax
+    Syntax(String)
 }

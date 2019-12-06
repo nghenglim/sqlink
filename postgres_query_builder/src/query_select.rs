@@ -1,3 +1,23 @@
+use crate::error::Error;
+
+#[derive(Clone, Debug)]
+pub struct QuerySelects(Vec<QuerySelectField>);
+
+impl Default for QuerySelects {
+    fn default() -> Self {
+        QuerySelects(Vec::new())
+    }
+}
+
+impl QuerySelects {
+    pub fn build(&self) -> Result<String, Error> {
+        Ok(self.0.clone().into_iter().map(|s| s.build()).collect::<Vec<String>>().join(", "))
+    }
+    pub fn push(&mut self, field: QuerySelectField) {
+        self.0.push(field);
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct QuerySelectField {
     name: String,
@@ -5,7 +25,7 @@ pub struct QuerySelectField {
 }
 
 impl QuerySelectField {
-    pub fn build(&self) -> String {
+    fn build(&self) -> String {
         if let Some(alias) = &self.alias {
             format!("{} AS {}", self.name, alias)
         } else {
