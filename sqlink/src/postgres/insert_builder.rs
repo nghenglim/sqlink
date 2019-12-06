@@ -1,8 +1,8 @@
-use crate::error::Error;
-use crate::query_table::{QueryTables, QueryTable};
-use crate::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
-use crate::query_token::{QueryTokens, QueryToken, FormatQueryTup};
-use crate::query_set::{QuerySets};
+use crate::postgres::error::Error;
+use crate::postgres::query_table::{QueryTables, QueryTable};
+use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
+use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};
+use crate::postgres::query_set::{QuerySets};
 
 #[derive(Default, Debug)]
 pub struct SqlInsert<'a> {
@@ -54,7 +54,7 @@ impl<'a> SqlInsert<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::query_token::{format_query};
+    use crate::postgres::query_token::{format_query};
     use super::*;
     #[test]
     fn test_insert_builder_1() {

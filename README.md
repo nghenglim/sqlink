@@ -4,7 +4,7 @@
 # For How it works
 ~~~rs
 fn test_postgres_db() -> Result<(), PostgresError> {
-    let conn = Connection::connect("postgresql://pguser:password@localhost:54321/postgres_query_builder_postgres", TlsMode::None)
+    let conn = Connection::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", TlsMode::None)
     .unwrap();
     conn.execute("DROP TABLE IF EXISTS person", &[]).unwrap();
     conn.execute("CREATE TABLE person (
@@ -14,7 +14,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
       )", &[]).unwrap();
 
     let opt: Option<Vec<u8>> = None;
-    let mut sqlinsert = postgres_query_builder::SqlInsert::new();
+    let mut sqlinsert = sqlink::SqlInsert::new();
     let qbuild = sqlinsert
         .table("person")
         .into(("id", 3))
@@ -26,7 +26,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         &qbuild.query,
         &qbuild.parameters,
     )?;
-    let mut sqlselect = postgres_query_builder::SqlSelect::new();
+    let mut sqlselect = sqlink::SqlSelect::new();
     let qbuild2 = sqlselect
         .select("id")
         .select(("name", "person_name"))

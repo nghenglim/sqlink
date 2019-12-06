@@ -1,7 +1,7 @@
-use crate::error::Error;
-use crate::query_field::{QueryWithParamsLoc};
-use crate::query_token::{QueryTokens, QueryToken};
-use crate::static_constant::PARAM_NOTATION;
+use crate::postgres::error::Error;
+use crate::postgres::query_field::{QueryWithParamsLoc};
+use crate::postgres::query_token::{QueryTokens, QueryToken};
+use crate::postgres::static_constant::PARAM_NOTATION;
 
 #[derive(Debug)]
 pub enum WhereOperator {
@@ -75,7 +75,7 @@ impl QueryWheres {
 // #[cfg(test)]
 // mod tests {
 //     use super::*;
-//     use crate::query_token::format_query;
+//     use crate::postgres::query_token::format_query;
 //     #[test]
 //     fn test_where_1() {
 //         let qwhere: QueryWheres = format_query("user.id = {} and user.name = {}".to_owned(), vec![10.into(), "hello".into()]).into();

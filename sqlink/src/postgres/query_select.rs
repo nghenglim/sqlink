@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::postgres::error::Error;
 
 #[derive(Clone, Debug)]
 pub struct QuerySelects(Vec<QuerySelectField>);

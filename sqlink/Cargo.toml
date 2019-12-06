@@ -1,5 +1,5 @@
 [package]
-name = "postgres-query-builder"
+name = "sqlink"
 version = "0.1.0"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"

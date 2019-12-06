@@ -1,36 +1,35 @@
-use crate::error::Error;
-use crate::query_limit_offset::QueryLimitOffset;
-use crate::query_where::{QueryWheres, WhereOperator};
-use crate::query_order::{QueryOrders, QueryOrder};
-use crate::query_table::{QueryTables, QueryTable};
-use crate::query_select::{QuerySelects, QuerySelectField};
-use crate::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
-use crate::query_token::FormatQueryTup;
+use crate::postgres::error::Error;
+use crate::postgres::query_table::{QueryTables, QueryTable};
+use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
+use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};
+use crate::postgres::query_where::{QueryWheres, WhereOperator};
+use crate::postgres::query_set::{QuerySets};
 
 #[derive(Default, Debug)]
-pub struct SqlSelect<'a> {
+pub struct SqlUpdate<'a> {
     _tables: QueryTables, // to support update tableA, tableB set ...
+    _sets: QuerySets,
     _wheres: QueryWheres,
-    _selects: QuerySelects,
-    _orders: QueryOrders,
-    _limit_offset: Option<QueryLimitOffset>,
     _parameters: Vec<ParameterValue<'a>>,
 }
 
-impl<'a> SqlSelect<'a> {
-    pub fn new() -> SqlSelect<'static> {
-        SqlSelect::default()
+impl<'a> SqlUpdate<'a> {
+    pub fn new() -> SqlUpdate<'static> {
+        SqlUpdate::default()
     }
     pub fn build(&self) -> Result<QueryWithParams, Error> {
         let mut param_iter = 1;
-        let built_for_select: String = self._selects.build()?;
         let built_for_table = self._tables.build(&mut param_iter)?;
+        let built_for_update = self._sets.build_for_update(&mut param_iter)?;
         let mut vec: Vec<String> = Vec::new();
         let mut p: Vec<ParameterValueAsRef> = Vec::new();
-        vec.push(format!("SELECT {} FROM {}", built_for_select, built_for_table.query));
         for ploc in built_for_table.parameters_loc {
             p.push(self._parameters[ploc].as_ref());
         }
+        for ploc in built_for_update.parameters_loc {
+            p.push(self._parameters[ploc].as_ref());
+        }
+        vec.push(format!("UPDATE {} SET {}", built_for_table.query, built_for_update.query));
         if self._wheres.len() > 0 {
             let built_for_where = self._wheres.build(&mut param_iter)?;
             vec.push(format!("WHERE {}", built_for_where.query));
@@ -38,36 +37,26 @@ impl<'a> SqlSelect<'a> {
                 p.push(self._parameters[ploc].as_ref());
             }
         }
-        if self._orders.len() > 0 {
-            let order: String = self._orders.build()?;
-            vec.push(format!("ORDER BY {}", order));
-        }
-        if let Some(limitoffset) = &self._limit_offset {
-            vec.push(limitoffset.build()?);
-        }
+
         Ok(QueryWithParams {
             query: vec.join(" "),
             parameters: p,
         })
     }
-    pub fn reset_fields(&mut self) -> &mut Self {
-        self._selects = QuerySelects::default();
-        self
-    }
-    pub fn select<S: Into<QuerySelectField>>(&mut self, field: S) -> &mut Self {
-        self._selects.push(field.into());
-        self
-    }
     pub fn table<S: Into<QueryTable>>(&mut self, table: S) -> &mut Self {
         self._tables.push(table.into());
         self
     }
-    pub fn order<S: Into<QueryOrder>>(&mut self, order: S) -> &mut Self {
-        self._orders.push(order.into());
+    pub fn set<S: Into<String>, T>(&mut self, field: (S, T)) -> &mut Self where T: postgres::types::ToSql + 'a {
+        self._parameters.push(Box::new(field.1));
+        self._sets.set((field.0.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
         self
     }
-    pub fn limit_offset<S: Into<QueryLimitOffset>>(&mut self, limit_offset: S) -> &mut Self {
-        self._limit_offset = Some(limit_offset.into());
+    pub fn set_raw<S: Into<String>>(&mut self, tup: (S, FormatQueryTup<'a>)) -> &mut Self{
+        let len = self._parameters.len();
+        self._parameters.extend((tup.1).1);
+        let qtokens = ((tup.1).0).to_query_tokens(len);
+        self._sets.set((tup.0.into(), qtokens));
         self
     }
     pub fn and_where(&mut self, ftup: FormatQueryTup<'a>) -> &mut Self {
@@ -145,21 +134,18 @@ impl<'a> SqlSelect<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::query_token::{format_query};
+    use crate::postgres::query_token::{format_query};
     use super::*;
     #[test]
-    fn test_select_builder_1() {
-        let mut sqlselect = SqlSelect::new();
-        let qbuild = sqlselect
-            .select("u.username")
-            .select(("u.user_id", "uid"))
-            .table(("user", "u"))
-            .left_join(("user_detail", "ud"), format_query("u.user_id = ud.user_id AND ud.code = {}".to_owned(), vec![Box::new(2)]))
-            .and_where(format_query("user.user_id = {}".to_owned(), vec![Box::new(1)]))
-            .order(("user.created_at", "DESC"))
-            .limit_offset((10, 20))
+    fn test_update_builder_1() {
+        let mut sqlupdate = SqlUpdate::new();
+        let qbuild = sqlupdate
+            .table("user")
+            .set(("age", 1337))
+            .set_raw(("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())])))
+            .and_where(format_query("id = {}".to_owned(), vec![Box::new(1)]))
             .build().unwrap();
-        assert_eq!(qbuild.query, "SELECT u.username, u.user_id AS uid FROM \"user\" AS u LEFT JOIN \"user_detail\" AS ud ON u.user_id = ud.user_id AND ud.code = $1 WHERE user.user_id = $2 ORDER BY user.created_at DESC LIMIT 10 OFFSET 20");
-        // assert_eq!(qbuild.parameters, vec![ParameterValue::I32(2), ParameterValue::I32(1)]);
+        assert_eq!(qbuild.query, "UPDATE \"user\" SET \"age\"=$1,\"name\"=LOWER($2) WHERE id = $3");
+        // assert_eq!(qbuild.parameters, vec![ParameterValue::I32(1337), ParameterValue::String("foo".to_owned()), ParameterValue::I32(1)]);
     }
 }

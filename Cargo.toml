@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "postgres-query-builder",
-    "postgres-query-builder-derive",
+    "sqlink",
+    "sqlink-derive",
 ]
 
 [profile.release]

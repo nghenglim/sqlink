@@ -1,7 +1,7 @@
-use crate::error::Error;
-use crate::query_field::{QueryWithParamsLoc};
-use crate::query_where::{QueryWheres, WhereOperator};
-use crate::static_constant::TABLE_ESCAPE;
+use crate::postgres::error::Error;
+use crate::postgres::query_field::{QueryWithParamsLoc};
+use crate::postgres::query_where::{QueryWheres, WhereOperator};
+use crate::postgres::static_constant::TABLE_ESCAPE;
 
 #[derive(Debug)]
 pub struct QueryTables(Vec<QueryTable>);

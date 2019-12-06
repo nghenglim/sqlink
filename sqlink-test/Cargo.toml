@@ -1,5 +1,5 @@
 [package]
-name = "postgres-query-builder-test"
+name = "sqlink-test"
 version = "0.1.0"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
@@ -8,6 +8,6 @@ edition = "2018"
 [workspace]
 
 [dependencies]
-postgres-query-builder = { path = "../postgres-query-builder" }
-postgres-query-builder-derive = { path = "../postgres-query-builder-derive" }
+sqlink = { path = "../sqlink" }
+sqlink-derive = { path = "../sqlink-derive" }
 postgres = "0.15"

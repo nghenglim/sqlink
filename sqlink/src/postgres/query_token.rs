@@ -1,6 +1,6 @@
-use crate::query_field::{ParameterValue, QueryWithParamsLoc};
-use crate::static_constant::PARAM_NOTATION;
-use crate::error::{Error};
+use crate::postgres::query_field::{ParameterValue, QueryWithParamsLoc};
+use crate::postgres::static_constant::PARAM_NOTATION;
+use crate::postgres::error::{Error};
 
 #[derive(Debug)]
 pub struct QueryTokens(pub Vec<QueryToken>);

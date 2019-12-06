@@ -1,7 +1,7 @@
 extern crate postgres;
 use postgres::{Connection, TlsMode, Error as PostgresError};
-use postgres_query_builder::{SqlInsert, SqlSelect};
-use postgres_query_builder_derive::{queryfmt};
+use sqlink::postgres::{SqlInsert, SqlSelect};
+use sqlink_derive::{postgres_fmt};
 #[derive(Debug, PartialEq)]
 struct Person {
     id: i32,
@@ -9,9 +9,15 @@ struct Person {
     data: Option<Vec<u8>>
 }
 
+struct PersonForm {
+    id: i32,
+    name: String,
+    data: Option<Vec<u8>>
+}
+
 #[test]
 fn test_postgres_db() -> Result<(), PostgresError> {
-    let conn = Connection::connect("postgresql://pguser:password@localhost:54321/postgres_query_builder_postgres", TlsMode::None)
+    let conn = Connection::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", TlsMode::None)
     .unwrap();
     conn.execute("DROP TABLE IF EXISTS person", &[]).unwrap();
     conn.execute("CREATE TABLE person (
@@ -20,13 +26,17 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         data            Bytea
       )", &[]).unwrap();
 
-    let opt: Option<Vec<u8>> = None;
+    let person_form = PersonForm {
+        id: 3,
+        name: "Hello World".to_owned(),
+        data: None
+    };
     let mut sqlinsert = SqlInsert::new();
     let qbuild = sqlinsert
         .table("person")
-        .into(("id", 3))
-        .into(("name", "Hello World"))
-        .into(("data", opt))
+        .into(("id", person_form.id))
+        .into(("name", person_form.name))
+        .into(("data", person_form.data))
         .build().unwrap();
     // println!("{:?}{:?}", qbuild.query, qbuild.parameters);
     conn.execute(
@@ -40,7 +50,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         .select("data")
         .table("person")
         .and_where(
-            queryfmt!("person.id = {}", 3)
+            postgres_fmt!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
         )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
