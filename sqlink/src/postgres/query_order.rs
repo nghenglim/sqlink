@@ -1,4 +1,4 @@
-use crate::postgres::error::Error;
+use crate::error::Error;
 
 #[derive(Clone, Debug)]
 pub struct QueryOrders(Vec<QueryOrder>);

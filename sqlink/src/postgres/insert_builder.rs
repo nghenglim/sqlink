@@ -1,4 +1,4 @@
-use crate::postgres::error::Error;
+use crate::error::Error;
 use crate::postgres::query_table::{QueryTables, QueryTable};
 use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
 use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};
@@ -12,7 +12,7 @@ pub struct SqlInsert<'a> {
 }
 
 impl<'a> SqlInsert<'a> {
-    pub fn new() -> SqlInsert<'a> {
+    pub fn new() -> SqlInsert<'static> {
         SqlInsert::default()
     }
     pub fn build(&self) -> Result<QueryWithParams, Error> {

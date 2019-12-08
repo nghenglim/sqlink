@@ -1,4 +1,4 @@
-use crate::postgres::error::Error;
+use crate::error::Error;
 use crate::postgres::query_field::{QueryWithParamsLoc};
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
 use crate::postgres::static_constant::TABLE_ESCAPE;

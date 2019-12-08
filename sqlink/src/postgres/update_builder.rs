@@ -1,4 +1,4 @@
-use crate::postgres::error::Error;
+use crate::error::Error;
 use crate::postgres::query_table::{QueryTables, QueryTable};
 use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
 use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};

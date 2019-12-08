@@ -1,4 +1,4 @@
-use crate::postgres::error::Error;
+use crate::error::Error;
 use crate::postgres::query_limit_offset::QueryLimitOffset;
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
 use crate::postgres::query_order::{QueryOrders, QueryOrder};
