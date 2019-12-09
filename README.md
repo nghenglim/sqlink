@@ -1,12 +1,12 @@
-# Postgres Query Builder for Rust
-- for usage with postgres crate
+## sqlink [![Latest Version](https://img.shields.io/crates/v/sqlink.svg)](https://crates.io/crates/sqlink)
+A simple query builder to use with low level library such as rust-postgres
 
-# For How it works
+## For How it works
 ~~~rs
 extern crate postgres;
 use postgres::{Connection, TlsMode, Error as PostgresError};
-use sqlink::postgres::{SqlInsert, SqlSelect};
-use sqlink_derive::{postgres_fmt};
+use sqlink::{PostgresBuilder};
+use sqlink_derive::{fmt_query};
 #[derive(Debug, PartialEq)]
 struct Person {
     id: i32,
@@ -36,9 +36,10 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         name: "Hello World".to_owned(),
         data: None
     };
-    let mut sqlinsert = SqlInsert::new();
+    let mut sqlinsert = PostgresBuilder::insert();
     let qbuild = sqlinsert
         .table("person")
+        .returning("id")
         .into(("id", person_form.id))
         .into(("name", person_form.name))
         .into(("data", person_form.data))
@@ -47,14 +48,14 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         &qbuild.query,
         &qbuild.parameters,
     )?;
-    let mut sqlselect = SqlSelect::new();
+    let mut sqlselect = PostgresBuilder::select();
     let qbuild2 = sqlselect
         .select("id")
         .select(("name", "person_name"))
         .select("data")
         .table("person")
         .and_where(
-            postgres_fmt!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
+            fmt_query!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
         )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
@@ -75,5 +76,5 @@ fn test_postgres_db() -> Result<(), PostgresError> {
 
 ~~~
 
-## Limitation
-Current queryfmt macro does not intelligently notify error like how format! macro do
+### Limitation
+Current fmt_query macro does not intelligently notify error like how format! macro do
