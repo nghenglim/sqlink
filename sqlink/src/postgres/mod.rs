@@ -4,6 +4,7 @@ mod query_token;
 mod query_table;
 mod query_set;
 mod query_select;
+mod query_return;
 mod query_limit_offset;
 mod builder;
 mod query_field;

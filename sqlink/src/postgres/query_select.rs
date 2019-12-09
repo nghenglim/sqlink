@@ -16,6 +16,9 @@ impl QuerySelects {
     pub fn push(&mut self, field: QuerySelectField) {
         self.0.push(field);
     }
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 #[derive(Clone, Debug)]

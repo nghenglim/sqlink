@@ -4,12 +4,14 @@ use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterVal
 use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
 use crate::postgres::query_set::{QuerySets};
+use crate::postgres::query_return::{QueryReturns, QueryReturnField};
 
 #[derive(Default, Debug)]
 pub struct SqlUpdate<'a> {
     _tables: QueryTables, // to support update tableA, tableB set ...
     _sets: QuerySets,
     _wheres: QueryWheres,
+    _returns: QueryReturns,
     _parameters: Vec<ParameterValue<'a>>,
 }
 
@@ -37,6 +39,10 @@ impl<'a> SqlUpdate<'a> {
                 p.push(self._parameters[ploc].as_ref());
             }
         }
+        if self._returns.len() > 0 {
+            let built_for_return: String = self._returns.build()?;
+            vec.push(format!("RETURNING {}", built_for_return));
+        }
 
         Ok(QueryWithParams {
             query: vec.join(" "),
@@ -57,6 +63,10 @@ impl<'a> SqlUpdate<'a> {
         self._parameters.extend((tup.1).1);
         let qtokens = ((tup.1).0).to_query_tokens(len);
         self._sets.set((tup.0.into(), qtokens));
+        self
+    }
+    pub fn returning<S: Into<QueryReturnField>>(&mut self, field: S) -> &mut Self {
+        self._returns.push(field.into());
         self
     }
     pub fn and_where(&mut self, ftup: FormatQueryTup<'a>) -> &mut Self {
