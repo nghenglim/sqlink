@@ -1,6 +1,7 @@
 use crate::postgres::update_builder::SqlUpdate;
 use crate::postgres::insert_builder::SqlInsert;
 use crate::postgres::select_builder::SqlSelect;
+use crate::postgres::delete_builder::SqlDelete;
 
 pub struct PostgresBuilder {
 }
@@ -14,5 +15,8 @@ impl PostgresBuilder {
     }
     pub fn update() -> SqlUpdate<'static> {
         SqlUpdate::new()
+    }
+    pub fn delete() -> SqlDelete<'static> {
+        SqlDelete::new()
     }
 }

@@ -77,9 +77,7 @@ pub fn format_query(query: String, arg: Vec<ParameterValue>) -> (TmpQueryTokens,
     let mut prevcur: usize = 0;
     while cur < queryvec.len() {
         if queryvec[cur] == '{' && cur + 1 < queryvec.len() {
-            if queryvec[cur + 1] == '{' {
-                cur += 2;
-            } else if queryvec[cur + 1] == '}' {
+            if queryvec[cur + 1] == '}' {
                 if prevcur != cur {
                     let querypart: String = queryvec[prevcur..cur].iter().cloned().collect();
                     qtoken.push(TmpQueryToken::Sql(querypart));

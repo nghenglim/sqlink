@@ -1,6 +1,9 @@
 ## sqlink [![Latest Version](https://img.shields.io/crates/v/sqlink.svg)](https://crates.io/crates/sqlink)
 A simple query builder to use with low level library such as rust-postgres
 
+## Documentation
+[https://docs.rs/sqlink/0.2.0/sqlink/]((https://docs.rs/sqlink/0.2.0/sqlink/))
+
 ## For How it works
 ~~~rs
 extern crate postgres;

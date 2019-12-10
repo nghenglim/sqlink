@@ -12,5 +12,6 @@ mod static_constant;
 pub mod insert_builder;
 pub mod select_builder;
 pub mod update_builder;
+pub mod delete_builder;
 pub use query_token::{format_query};
 pub use builder::PostgresBuilder;
