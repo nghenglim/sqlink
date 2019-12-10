@@ -53,16 +53,16 @@ impl<'a> SqlUpdate<'a> {
         self._tables.push(table.into());
         self
     }
-    pub fn set<S: Into<String>, T>(&mut self, field: (S, T)) -> &mut Self where T: postgres::types::ToSql + 'a {
-        self._parameters.push(Box::new(field.1));
-        self._sets.set((field.0.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
+    pub fn set<S: Into<String>, T>(&mut self, field: S, param: T) -> &mut Self where T: postgres::types::ToSql + 'a {
+        self._parameters.push(Box::new(param));
+        self._sets.set((field.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
         self
     }
-    pub fn set_raw<S: Into<String>>(&mut self, tup: (S, FormatQueryTup<'a>)) -> &mut Self{
+    pub fn set_raw<S: Into<String>>(&mut self, field: S, tup: FormatQueryTup<'a>) -> &mut Self{
         let len = self._parameters.len();
-        self._parameters.extend((tup.1).1);
-        let qtokens = ((tup.1).0).to_query_tokens(len);
-        self._sets.set((tup.0.into(), qtokens));
+        self._parameters.extend(tup.1);
+        let qtokens = (tup.0).to_query_tokens(len);
+        self._sets.set((field.into(), qtokens));
         self
     }
     pub fn returning<S: Into<QueryReturnField>>(&mut self, field: S) -> &mut Self {
@@ -151,8 +151,8 @@ mod tests {
         let mut sqlupdate = SqlUpdate::new();
         let qbuild = sqlupdate
             .table("user")
-            .set(("age", 1337))
-            .set_raw(("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())])))
+            .set("age", 1337)
+            .set_raw("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())]))
             .and_where(format_query("id = {}".to_owned(), vec![Box::new(1)]))
             .build().unwrap();
         assert_eq!(qbuild.query, "UPDATE \"user\" SET \"age\"=$1,\"name\"=LOWER($2) WHERE id = $3");

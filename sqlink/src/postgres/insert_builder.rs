@@ -8,7 +8,7 @@ use crate::postgres::query_return::{QueryReturns, QueryReturnField};
 #[derive(Default, Debug)]
 pub struct SqlInsert<'a> {
     _tables: QueryTables, // to support update tableA, tableB set ...
-    _sets: QuerySets,
+    _intos: QuerySets,
     _returns: QueryReturns,
     _parameters: Vec<ParameterValue<'a>>,
 }
@@ -24,7 +24,7 @@ impl<'a> SqlInsert<'a> {
         }
         let mut vec: Vec<String> = Vec::new();
         let built_for_table = self._tables.build(&mut param_iter)?;
-        let built_for_create = self._sets.build_for_create(&mut param_iter)?;
+        let built_for_create = self._intos.build_for_create(&mut param_iter)?;
         let mut p: Vec<ParameterValueAsRef> = Vec::new();
         for ploc in built_for_table.parameters_loc {
             p.push(self._parameters[ploc].as_ref());
@@ -50,16 +50,16 @@ impl<'a> SqlInsert<'a> {
         self._tables.push(table.into());
         self
     }
-    pub fn into<S: Into<String>, T>(&mut self, field: (S, T)) -> &mut Self where T: postgres::types::ToSql + 'a {
-        self._parameters.push(Box::new(field.1));
-        self._sets.set((field.0.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
+    pub fn into<S: Into<String>, T>(&mut self, field: S, param: T) -> &mut Self where T: postgres::types::ToSql + 'a {
+        self._parameters.push(Box::new(param));
+        self._intos.set((field.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
         self
     }
-    pub fn into_raw<S: Into<String>>(&mut self, tup: (S, FormatQueryTup<'a>)) -> &mut Self{
+    pub fn into_raw<S: Into<String>>(&mut self, field: S, tup: FormatQueryTup<'a>) -> &mut Self{
         let len = self._parameters.len();
-        self._parameters.extend((tup.1).1);
-        let qtokens = ((tup.1).0).to_query_tokens(len);
-        self._sets.set((tup.0.into(), qtokens));
+        self._parameters.extend(tup.1);
+        let qtokens = (tup.0).to_query_tokens(len);
+        self._intos.set((field.into(), qtokens));
         self
     }
 }
@@ -76,9 +76,9 @@ mod tests {
             .returning("id")
             .returning("age")
             .table("user")
-            .into(("spouse", user_spouse))
-            .into(("age", 1337))
-            .into_raw(("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())])))
+            .into("spouse", user_spouse)
+            .into("age", 1337)
+            .into_raw("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())]))
             .build().unwrap();
         assert_eq!(qbuild.query, "INSERT INTO \"user\"(\"spouse\",\"age\",\"name\") VALUES ($1,$2,LOWER($3)) RETURNING id, age");
         // println!("{:?}", qbuild.parameters);

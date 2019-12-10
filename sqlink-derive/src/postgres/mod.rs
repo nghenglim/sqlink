@@ -18,9 +18,9 @@ mod tests {
         let mut sql_insert = PostgresBuilder::insert();
         let qbuild = sql_insert
             .table("user")
-            .into(("spouse", user_spouse))
-            .into(("age", 1337))
-            .into_raw(("name", fmt_query!("LOWER({})", "foo")))
+            .into("spouse", user_spouse)
+            .into("age", 1337)
+            .into_raw("name", fmt_query!("LOWER({})", "foo"))
             .build().unwrap();
         assert_eq!(qbuild.query, "INSERT INTO \"user\"(\"spouse\",\"age\",\"name\") VALUES ($1,$2,LOWER($3))");
         assert_eq!(format!("{:?}", qbuild.parameters), "[None, 1337, \"foo\"]");

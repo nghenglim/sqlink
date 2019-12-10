@@ -32,19 +32,31 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         data: None
     };
     let mut sqlinsert = PostgresBuilder::insert();
-    let qbuild = sqlinsert
+    let qbuiltinsert = sqlinsert
         .table("person")
         .returning("id")
-        .into(("id", person_form.id))
-        .into(("name", person_form.name))
-        .into(("data", person_form.data))
+        .into("id", person_form.id)
+        .into("name", person_form.name)
+        .into("data", person_form.data)
         .build().unwrap();
     conn.execute(
-        &qbuild.query,
-        &qbuild.parameters,
+        &qbuiltinsert.query,
+        &qbuiltinsert.parameters,
+    )?;
+    let mut sqlupdate = PostgresBuilder::update();
+    let qbuiltinsert = sqlupdate
+        .table("person")
+        .set("name", "Real Hello World")
+        .and_where(
+            fmt_query!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
+        )
+        .build().unwrap();
+    conn.execute(
+        &qbuiltinsert.query,
+        &qbuiltinsert.parameters,
     )?;
     let mut sqlselect = PostgresBuilder::select();
-    let qbuild2 = sqlselect
+    let qbuiltselect = sqlselect
         .select("id")
         .select(("name", "person_name"))
         .select("data")
@@ -54,7 +66,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
-    for row in &conn.query(&qbuild2.query, &qbuild2.parameters).unwrap() {
+    for row in &conn.query(&qbuiltselect.query, &qbuiltselect.parameters).unwrap() {
         person_vec.push(Person {
             id: row.get(0),
             name: row.get(1),
@@ -63,7 +75,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
     }
     assert_eq!(person_vec, vec![Person {
         id: 3,
-        name: "Hello World".to_owned(),
+        name: "Real Hello World".to_owned(),
         data: None
     }]);
     Ok(())

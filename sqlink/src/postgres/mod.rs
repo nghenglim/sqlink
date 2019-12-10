@@ -7,6 +7,7 @@ mod query_select;
 mod query_return;
 mod query_limit_offset;
 mod builder;
+mod schema;
 mod query_field;
 mod static_constant;
 pub mod insert_builder;
