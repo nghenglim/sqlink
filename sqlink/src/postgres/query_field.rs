@@ -1,4 +1,3 @@
-pub type ParameterValue<'a> = Box<dyn postgres::types::ToSql + 'a>;
 pub type ParameterValueAsRef<'a> = &'a dyn postgres::types::ToSql;
 pub struct QueryWithParamsLoc {
     pub query: String,

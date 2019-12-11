@@ -1,4 +1,4 @@
-use crate::postgres::query_field::{ParameterValue, QueryWithParamsLoc};
+use crate::postgres::query_field::{ParameterValueAsRef, QueryWithParamsLoc};
 use crate::postgres::static_constant::PARAM_NOTATION;
 use crate::error::{Error};
 
@@ -68,8 +68,8 @@ impl TmpQueryTokens {
         qtokens
     }
 }
-pub type FormatQueryTup<'a> = (TmpQueryTokens, Vec<ParameterValue<'a>>);
-pub fn format_query(query: String, arg: Vec<ParameterValue>) -> (TmpQueryTokens, Vec<ParameterValue>) {
+pub type FormatQueryTup<'a> = (TmpQueryTokens, Vec<ParameterValueAsRef<'a>>);
+pub fn format_query(query: String, arg: Vec<ParameterValueAsRef>) -> (TmpQueryTokens, Vec<ParameterValueAsRef>) {
     let mut argiter = 0;
     let mut qtoken: Vec<TmpQueryToken> = Vec::new();
     let queryvec: Vec<char> = query.chars().collect();

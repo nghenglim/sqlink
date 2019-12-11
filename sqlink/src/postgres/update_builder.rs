@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::postgres::query_table::{QueryTables, QueryTable};
-use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
+use crate::postgres::query_field::{QueryWithParams, ParameterValueAsRef};
 use crate::postgres::query_token::{QueryTokens, QueryToken, FormatQueryTup};
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
 use crate::postgres::query_set::{QuerySets};
@@ -12,7 +12,7 @@ pub struct SqlUpdate<'a> {
     _sets: QuerySets,
     _wheres: QueryWheres,
     _returns: QueryReturns,
-    _parameters: Vec<ParameterValue<'a>>,
+    _parameters: Vec<ParameterValueAsRef<'a>>,
 }
 
 impl<'a> SqlUpdate<'a> {
@@ -26,17 +26,17 @@ impl<'a> SqlUpdate<'a> {
         let mut vec: Vec<String> = Vec::new();
         let mut p: Vec<ParameterValueAsRef> = Vec::new();
         for ploc in built_for_table.parameters_loc {
-            p.push(self._parameters[ploc].as_ref());
+            p.push(self._parameters[ploc]);
         }
         for ploc in built_for_update.parameters_loc {
-            p.push(self._parameters[ploc].as_ref());
+            p.push(self._parameters[ploc]);
         }
         vec.push(format!("UPDATE {} SET {}", built_for_table.query, built_for_update.query));
         if self._wheres.len() > 0 {
             let built_for_where = self._wheres.build(&mut param_iter)?;
             vec.push(format!("WHERE {}", built_for_where.query));
             for ploc in built_for_where.parameters_loc {
-                p.push(self._parameters[ploc].as_ref());
+                p.push(self._parameters[ploc]);
             }
         }
         if self._returns.len() > 0 {
@@ -53,8 +53,8 @@ impl<'a> SqlUpdate<'a> {
         self._tables.push(table.into());
         self
     }
-    pub fn set<S: Into<String>, T>(&mut self, field: S, param: T) -> &mut Self where T: postgres::types::ToSql + 'a {
-        self._parameters.push(Box::new(param));
+    pub fn set<S: Into<String>, T>(&mut self, field: S, param: &'a T) -> &mut Self where T: postgres::types::ToSql + 'a {
+        self._parameters.push(param);
         self._sets.set((field.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
         self
     }
@@ -151,11 +151,11 @@ mod tests {
         let mut sqlupdate = SqlUpdate::new();
         let qbuild = sqlupdate
             .table("user")
-            .set("age", 1337)
-            .set_raw("name", format_query("LOWER({})".to_owned(), vec![Box::new("foo".to_owned())]))
-            .and_where(format_query("id = {}".to_owned(), vec![Box::new(1)]))
+            .set("age", &1337)
+            .set_raw("name", format_query("LOWER({})".to_owned(), vec![&("foo")]))
+            .and_where(format_query("id = {}".to_owned(), vec![&(1)]))
             .build().unwrap();
         assert_eq!(qbuild.query, "UPDATE \"user\" SET \"age\"=$1,\"name\"=LOWER($2) WHERE id = $3");
-        // assert_eq!(qbuild.parameters, vec![ParameterValue::I32(1337), ParameterValue::String("foo".to_owned()), ParameterValue::I32(1)]);
+        assert_eq!(format!("{:?}", qbuild.parameters), "[1337, \"foo\", 1]");
     }
 }

@@ -35,23 +35,28 @@ fn test_postgres_db() -> Result<(), PostgresError> {
     let qbuiltinsert = sqlinsert
         .table("person")
         .returning("id")
-        .into("id", person_form.id)
-        .into("name", person_form.name)
-        .into("data", person_form.data)
+        .set("id", &person_form.id)
+        .set("name", &person_form.name)
+        .set("data", &person_form.data)
         .build().unwrap();
-    conn.execute(
+    let mut id: i32 = 0;
+    for row in &conn.query(
         &qbuiltinsert.query,
         &qbuiltinsert.parameters,
-    )?;
+    )? {
+        id = row.get(0);
+    }
+    assert_eq!(id, 3);
+
     let mut sqlupdate = PostgresBuilder::update();
     let qbuiltinsert = sqlupdate
         .table("person")
-        .set("name", "Real Hello World")
+        .set("name", &("Real Hello World"))
         .and_where(
             fmt_query!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
         )
         .build().unwrap();
-    conn.execute(
+    conn.query(
         &qbuiltinsert.query,
         &qbuiltinsert.parameters,
     )?;

@@ -71,18 +71,3 @@ impl QueryWheres {
         self.0.extend(qwhere.0);
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::postgres::query_token::format_query;
-//     #[test]
-//     fn test_where_1() {
-//         let qwhere: QueryWheres = format_query("user.id = {} and user.name = {}".to_owned(), vec![10.into(), "hello".into()]).into();
-//         let result = qwhere.build(&mut 0).unwrap();
-//         assert_eq!(result.query, "user.id = $0 and user.name = $1");
-//         assert_eq!(result.parameters.len(), 2);
-//         assert_eq!(result.parameters[0], ParameterValue::I32(10));
-//         assert_eq!(result.parameters[1], ParameterValue::String("hello".to_owned()));
-//     }
-// }

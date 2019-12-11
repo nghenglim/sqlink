@@ -4,7 +4,7 @@ use crate::postgres::query_where::{QueryWheres, WhereOperator};
 use crate::postgres::query_order::{QueryOrders, QueryOrder};
 use crate::postgres::query_table::{QueryTables, QueryTable};
 use crate::postgres::query_select::{QuerySelects, QuerySelectField};
-use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
+use crate::postgres::query_field::{QueryWithParams, ParameterValueAsRef};
 use crate::postgres::query_token::FormatQueryTup;
 
 #[derive(Default, Debug)]
@@ -14,7 +14,7 @@ pub struct SqlSelect<'a> {
     _selects: QuerySelects,
     _orders: QueryOrders,
     _limit_offset: Option<QueryLimitOffset>,
-    _parameters: Vec<ParameterValue<'a>>,
+    _parameters: Vec<ParameterValueAsRef<'a>>,
 }
 
 impl<'a> SqlSelect<'a> {
@@ -29,13 +29,13 @@ impl<'a> SqlSelect<'a> {
         let mut p: Vec<ParameterValueAsRef> = Vec::new();
         vec.push(format!("SELECT {} FROM {}", built_for_select, built_for_table.query));
         for ploc in built_for_table.parameters_loc {
-            p.push(self._parameters[ploc].as_ref());
+            p.push(self._parameters[ploc]);
         }
         if self._wheres.len() > 0 {
             let built_for_where = self._wheres.build(&mut param_iter)?;
             vec.push(format!("WHERE {}", built_for_where.query));
             for ploc in built_for_where.parameters_loc {
-                p.push(self._parameters[ploc].as_ref());
+                p.push(self._parameters[ploc]);
             }
         }
         if self._orders.len() > 0 {
@@ -154,8 +154,8 @@ mod tests {
             .select("u.username")
             .select(("u.user_id", "uid"))
             .table(("user", "u"))
-            .left_join(("user_detail", "ud"), format_query("u.user_id = ud.user_id AND ud.code = {}".to_owned(), vec![Box::new(2)]))
-            .and_where(format_query("user.user_id = {}".to_owned(), vec![Box::new(1)]))
+            .left_join(("user_detail", "ud"), format_query("u.user_id = ud.user_id AND ud.code = {}".to_owned(), vec![&(2)]))
+            .and_where(format_query("user.user_id = {}".to_owned(), vec![&(1)]))
             .order(("user.created_at", "DESC"))
             .limit_offset((10, 20))
             .build().unwrap();

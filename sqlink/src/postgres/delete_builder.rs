@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::postgres::query_table::{QueryTables, QueryTable};
-use crate::postgres::query_field::{QueryWithParams, ParameterValue, ParameterValueAsRef};
+use crate::postgres::query_field::{QueryWithParams, ParameterValueAsRef};
 use crate::postgres::query_token::{FormatQueryTup};
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
 
@@ -8,7 +8,7 @@ use crate::postgres::query_where::{QueryWheres, WhereOperator};
 pub struct SqlDelete<'a> {
     _tables: QueryTables,
     _wheres: QueryWheres,
-    _parameters: Vec<ParameterValue<'a>>,
+    _parameters: Vec<ParameterValueAsRef<'a>>,
 }
 
 impl<'a> SqlDelete<'a> {
@@ -24,14 +24,14 @@ impl<'a> SqlDelete<'a> {
         let mut vec: Vec<String> = Vec::new();
         let mut p: Vec<ParameterValueAsRef> = Vec::new();
         for ploc in built_for_table.parameters_loc {
-            p.push(self._parameters[ploc].as_ref());
+            p.push(self._parameters[ploc]);
         }
         vec.push(format!("DELETE FROM {}", built_for_table.query));
         if self._wheres.len() > 0 {
             let built_for_where = self._wheres.build(&mut param_iter)?;
             vec.push(format!("WHERE {}", built_for_where.query));
             for ploc in built_for_where.parameters_loc {
-                p.push(self._parameters[ploc].as_ref());
+                p.push(self._parameters[ploc]);
             }
         }
 
@@ -126,7 +126,7 @@ mod tests {
         let mut sql_delete = SqlDelete::new();
         let qbuild = sql_delete
             .table("user")
-            .and_where(format_query("id = {}".to_owned(), vec![Box::new(1)]))
+            .and_where(format_query("id = {}".to_owned(), vec![&(1)]))
             .build().unwrap();
         assert_eq!(qbuild.query, "DELETE FROM \"user\" WHERE id = $1");
     }
