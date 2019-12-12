@@ -15,4 +15,4 @@ jobs:
     - name: Build integrated
       run: cd sqlink-test && cargo build --verbose
     - name: Test integrated
-      run: docker-compose up --detach && cargo test --verbose
+      run: cd sqlink-test && docker-compose up --detach && cargo test --verbose
