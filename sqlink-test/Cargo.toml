@@ -9,5 +9,4 @@ edition = "2018"
 
 [dependencies]
 sqlink = { path = "../sqlink" }
-sqlink-derive = { path = "../sqlink-derive" }
-postgres = "0.15"
+postgres = "0.17.0-alpha.2"

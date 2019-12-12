@@ -7,6 +7,8 @@ mod query_select;
 mod query_return;
 mod query_limit_offset;
 mod builder;
+/// internally just call format_query, can easily create your own
+pub mod op;
 mod query_field;
 mod static_constant;
 mod insert_builder;

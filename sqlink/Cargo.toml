@@ -1,6 +1,6 @@
 [package]
 name = "sqlink"
-version = "0.4.0"
+version = "0.5.0-alpha.2"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
 description = "postgres builder to work with postgres"
@@ -10,4 +10,4 @@ license = "MIT/Apache-2.0"
 default = []
 
 [dependencies]
-postgres = { version = "0.15" }
+postgres-types = { version = "0.1.0-alpha.2" }

@@ -1,7 +1,6 @@
 [workspace]
 members = [
-    "sqlink",
-    "sqlink-derive",
+    "sqlink"
 ]
 
 [profile.release]
