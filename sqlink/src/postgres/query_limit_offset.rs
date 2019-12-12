@@ -2,8 +2,8 @@ use crate::error::Error;
 
 #[derive(Clone, Debug)]
 pub struct QueryLimitOffset {
-    limit: u32,
-    offset: u32,
+    limit: usize,
+    offset: usize,
 }
 
 impl QueryLimitOffset {
@@ -16,8 +16,8 @@ impl QueryLimitOffset {
     }
 }
 
-impl From<u32> for QueryLimitOffset {
-    fn from(limit: u32) -> Self {
+impl From<usize> for QueryLimitOffset {
+    fn from(limit: usize) -> Self {
         QueryLimitOffset {
             limit: limit,
             offset: 0,
@@ -25,8 +25,8 @@ impl From<u32> for QueryLimitOffset {
     }
 }
 
-impl From<(u32, u32)> for QueryLimitOffset {
-    fn from(tup: (u32, u32)) -> Self {
+impl From<(usize, usize)> for QueryLimitOffset {
+    fn from(tup: (usize, usize)) -> Self {
         QueryLimitOffset {
             limit: tup.0,
             offset: tup.1,

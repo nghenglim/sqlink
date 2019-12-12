@@ -69,10 +69,10 @@ impl TmpQueryTokens {
     }
 }
 pub type FormatQueryTup<'a> = (TmpQueryTokens, Vec<ParameterValueAsRef<'a>>);
-pub fn format_query(query: String, arg: Vec<ParameterValueAsRef>) -> (TmpQueryTokens, Vec<ParameterValueAsRef>) {
+pub fn format_query<S: Into<String>>(query: S, arg: Vec<ParameterValueAsRef>) -> (TmpQueryTokens, Vec<ParameterValueAsRef>) {
     let mut argiter = 0;
     let mut qtoken: Vec<TmpQueryToken> = Vec::new();
-    let queryvec: Vec<char> = query.chars().collect();
+    let queryvec: Vec<char> = query.into().chars().collect();
     let mut cur: usize = 0;
     let mut prevcur: usize = 0;
     while cur < queryvec.len() {

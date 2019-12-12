@@ -53,7 +53,7 @@ impl<'a> SqlUpdate<'a> {
         self._tables.push(table.into());
         self
     }
-    pub fn set<S: Into<String>, T>(&mut self, field: S, param: &'a T) -> &mut Self where T: postgres::types::ToSql + 'a {
+    pub fn set<S: Into<String>, T>(&mut self, field: S, param: &'a T) -> &mut Self where T: postgres_types::ToSql + std::marker::Sync + 'a {
         self._parameters.push(param);
         self._sets.set((field.into(), QueryTokens(vec![QueryToken::ParameterLoc(self._parameters.len() - 1)])));
         self

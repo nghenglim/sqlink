@@ -1,7 +1,9 @@
 extern crate postgres;
-use postgres::{Connection, TlsMode, Error as PostgresError};
-use sqlink::{PostgresBuilder};
-use sqlink_derive::{fmt_query};
+use postgres::{Client, NoTls, Error as PostgresError};
+use sqlink::{
+    PostgresBuilder,
+    postgres::{format_query, op}
+};
 #[derive(Debug, PartialEq)]
 struct Person {
     id: i32,
@@ -17,8 +19,7 @@ struct PersonForm {
 
 #[test]
 fn test_postgres_db() -> Result<(), PostgresError> {
-    let conn = Connection::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", TlsMode::None)
-    .unwrap();
+    let mut conn = Client::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", NoTls).unwrap();
     conn.execute("DROP TABLE IF EXISTS person", &[]).unwrap();
     conn.execute("CREATE TABLE person (
         id              INT PRIMARY KEY,
@@ -41,7 +42,7 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         .build().unwrap();
     let mut id: i32 = 0;
     for row in &conn.query(
-        &qbuiltinsert.query,
+        qbuiltinsert.query.as_str(),
         &qbuiltinsert.parameters,
     )? {
         id = row.get(0);
@@ -53,11 +54,11 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         .table("person")
         .set("name", &("Real Hello World"))
         .and_where(
-            fmt_query!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
+            op::eq("person.id", &3) // equivalence to format_query("person.id = {}", vec![&3]), note that 3 has to be same type as person id, which is i32/INT here
         )
         .build().unwrap();
     conn.query(
-        &qbuiltinsert.query,
+        qbuiltinsert.query.as_str(),
         &qbuiltinsert.parameters,
     )?;
     let mut sqlselect = PostgresBuilder::select();
@@ -67,11 +68,11 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         .select("data")
         .table("person")
         .and_where(
-            fmt_query!("person.id = {}", 3) // note that 3 has to be same type as person id, which is i32/INT here
+            format_query("person.id = {}", vec![&3])
         )
         .build().unwrap();
     let mut person_vec: Vec<Person> = Vec::new();
-    for row in &conn.query(&qbuiltselect.query, &qbuiltselect.parameters).unwrap() {
+    for row in &conn.query(qbuiltselect.query.as_str(), &qbuiltselect.parameters).unwrap() {
         person_vec.push(Person {
             id: row.get(0),
             name: row.get(1),
@@ -83,5 +84,19 @@ fn test_postgres_db() -> Result<(), PostgresError> {
         name: "Real Hello World".to_owned(),
         data: None
     }]);
+    let mut sqldelete = PostgresBuilder::delete();
+    let qbuiltdelete = sqldelete
+        .table("person")
+        .and_where(
+            op::eq("person.id", &3)
+        )
+        .build().unwrap();
+    conn.query(
+        qbuiltdelete.query.as_str(),
+        &qbuiltdelete.parameters,
+    )?;
+
+    let rows = &conn.query(qbuiltselect.query.as_str(), &qbuiltselect.parameters).unwrap();
+    assert_eq!(rows.len(), 0);
     Ok(())
 }
