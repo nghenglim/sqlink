@@ -23,8 +23,8 @@ impl QuerySelects {
 
 #[derive(Clone, Debug)]
 pub struct QuerySelectField {
-    name: String,
-    alias: Option<String>,
+    pub name: String,
+    pub alias: Option<String>,
 }
 
 impl QuerySelectField {

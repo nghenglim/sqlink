@@ -1,5 +1,6 @@
 mod query_where;
 mod query_order;
+mod query_group;
 mod query_token;
 mod query_table;
 mod query_set;

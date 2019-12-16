@@ -1,6 +1,6 @@
 [package]
 name = "sqlink"
-version = "0.5.0-alpha.2"
+version = "0.6.0-alpha.2"
 authors = ["Liam <nghenglim@gmail.com>"]
 edition = "2018"
 description = "postgres builder to work with postgres"

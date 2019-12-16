@@ -20,9 +20,8 @@ use crate::postgres::delete_builder::SqlDelete;
 ///     name: String,
 ///     data: Option<Vec<u8>>
 /// }
-///
+
 /// // let mut conn = Client::connect("postgresql://pguser:password@localhost:54321/sqlink_postgres", NoTls).unwrap();
-///
 /// let person_form = PersonForm {
 ///     id: 3,
 ///     name: "Hello World".to_owned(),
@@ -36,9 +35,15 @@ use crate::postgres::delete_builder::SqlDelete;
 ///     .set("name", &person_form.name)
 ///     .set("data", &person_form.data)
 ///     .build().unwrap();
-///
-/// // &conn.query(qbuiltinsert.query.as_str(), &qbuiltinsert.parameters)?
-///
+/// // let mut id: i32 = 0;
+/// // for row in &conn.query(
+/// //     qbuiltinsert.query.as_str(),
+/// //     &qbuiltinsert.parameters,
+/// // )? {
+/// //     id = row.get(0);
+/// // }
+/// // assert_eq!(id, 3);
+
 /// let mut sqlupdate = PostgresBuilder::update();
 /// let qbuiltinsert = sqlupdate
 ///     .table("person")
@@ -50,13 +55,22 @@ use crate::postgres::delete_builder::SqlDelete;
 /// let mut sqlselect = PostgresBuilder::select();
 /// let qbuiltselect = sqlselect
 ///     .select("id")
-///     .select(("name", "person_name"))
+///     .select_as("name", "person_name")
 ///     .select("data")
 ///     .table("person")
 ///     .and_where(
 ///         format_query("person.id = {}", vec![&3])
 ///     )
+///     .limit_offset(10) // equivalent of limit_offset((10, 0)), which is limit 10 offset 0
+///     .order("id", "ASC")
 ///     .build().unwrap();
+/// // misc feature
+/// sqlselect
+///     .reset_selects()
+///     .select("COUNT(id)")
+///     .group("something")
+///     .build().unwrap();
+///
 /// let mut sqldelete = PostgresBuilder::delete();
 /// let qbuiltdelete = sqldelete
 ///     .table("person")
