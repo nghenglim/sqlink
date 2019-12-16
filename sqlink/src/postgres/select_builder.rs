@@ -1,6 +1,7 @@
 use crate::error::Error;
 use crate::postgres::query_limit_offset::QueryLimitOffset;
 use crate::postgres::query_where::{QueryWheres, WhereOperator};
+use crate::postgres::query_group::{QueryGroups, QueryGroup};
 use crate::postgres::query_order::{QueryOrders, QueryOrder};
 use crate::postgres::query_table::{QueryTables, QueryTable};
 use crate::postgres::query_select::{QuerySelects, QuerySelectField};
@@ -13,6 +14,7 @@ pub struct SqlSelect<'a> {
     _wheres: QueryWheres,
     _selects: QuerySelects,
     _orders: QueryOrders,
+    _groups: QueryGroups,
     _limit_offset: Option<QueryLimitOffset>,
     _parameters: Vec<ParameterValueAsRef<'a>>,
 }
@@ -38,6 +40,10 @@ impl<'a> SqlSelect<'a> {
                 p.push(self._parameters[ploc]);
             }
         }
+        if self._groups.len() > 0 {
+            let group: String = self._groups.build()?;
+            vec.push(format!("GROUP BY {}", group));
+        }
         if self._orders.len() > 0 {
             let order: String = self._orders.build()?;
             vec.push(format!("ORDER BY {}", order));
@@ -50,20 +56,38 @@ impl<'a> SqlSelect<'a> {
             parameters: p,
         })
     }
-    pub fn reset_fields(&mut self) -> &mut Self {
+    pub fn reset_selects(&mut self) -> &mut Self {
         self._selects = QuerySelects::default();
         self
     }
-    pub fn select<S: Into<QuerySelectField>>(&mut self, field: S) -> &mut Self {
-        self._selects.push(field.into());
+    pub fn select<S: Into<String>>(&mut self, field: S) -> &mut Self {
+        self._selects.push(QuerySelectField {
+            name: field.into(),
+            alias: None
+        });
+        self
+    }
+    pub fn select_as<S: Into<String>, T: Into<String>>(&mut self, field: S, alias: T) -> &mut Self {
+        self._selects.push(QuerySelectField {
+            name: field.into(),
+            alias: Some(alias.into())
+        });
         self
     }
     pub fn table<S: Into<QueryTable>>(&mut self, table: S) -> &mut Self {
         self._tables.push(table.into());
         self
     }
-    pub fn order<S: Into<QueryOrder>>(&mut self, order: S) -> &mut Self {
-        self._orders.push(order.into());
+    pub fn order<S: Into<String>, T: Into<String>>(&mut self, field: S, order_way: T) -> &mut Self {
+        self._orders.push(QueryOrder {
+            name: format!("{} {}", field.into(), order_way.into()),
+        });
+        self
+    }
+    pub fn group<S: Into<String>>(&mut self, field: S) -> &mut Self {
+        self._groups.push(QueryGroup {
+            name: field.into(),
+        });
         self
     }
     pub fn limit_offset<S: Into<QueryLimitOffset>>(&mut self, limit_offset: S) -> &mut Self {
@@ -152,14 +176,15 @@ mod tests {
         let mut sqlselect = SqlSelect::new();
         let qbuild = sqlselect
             .select("u.username")
-            .select(("u.user_id", "uid"))
+            .select_as("u.user_id", "uid")
             .table(("user", "u"))
             .left_join(("user_detail", "ud"), format_query("u.user_id = ud.user_id AND ud.code = {}".to_owned(), vec![&(2)]))
             .and_where(format_query("user.user_id = {}".to_owned(), vec![&(1)]))
-            .order(("user.created_at", "DESC"))
+            .order("user.created_at", "DESC")
             .limit_offset((10, 20))
+            .group("something")
             .build().unwrap();
-        assert_eq!(qbuild.query, "SELECT u.username, u.user_id AS uid FROM \"user\" AS u LEFT JOIN \"user_detail\" AS ud ON u.user_id = ud.user_id AND ud.code = $1 WHERE user.user_id = $2 ORDER BY user.created_at DESC LIMIT 10 OFFSET 20");
+        assert_eq!(qbuild.query, "SELECT u.username, u.user_id AS uid FROM \"user\" AS u LEFT JOIN \"user_detail\" AS ud ON u.user_id = ud.user_id AND ud.code = $1 WHERE user.user_id = $2 GROUP BY something ORDER BY user.created_at DESC LIMIT 10 OFFSET 20");
         // assert_eq!(qbuild.parameters, vec![ParameterValue::I32(2), ParameterValue::I32(1)]);
     }
 }

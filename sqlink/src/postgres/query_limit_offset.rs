@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_limit_offset_2() {
-        let limit_offset: QueryLimitOffset = 1.into();
+        let limit_offset: QueryLimitOffset = (1usize).into();
         assert_eq!(limit_offset.build().unwrap(), "LIMIT 1");
     }
 
