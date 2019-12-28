@@ -9,4 +9,4 @@ edition = "2018"
 
 [dependencies]
 sqlink = { path = "../sqlink" }
-postgres = "0.17.0-alpha.2"
+postgres = "0.17.0"
