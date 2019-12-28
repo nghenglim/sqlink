@@ -10,4 +10,4 @@ license = "MIT/Apache-2.0"
 default = []
 
 [dependencies]
-postgres-types = { version = "0.1.0" }
+postgres-types = "0.1"
